@@ -1,0 +1,24 @@
+body {
+  background-color: #363c4a;
+}
+
+.header {
+  text-align: center;
+  color: white;
+}
+
+.header #title {
+  font-size: 75px;
+  font-weight: 800;
+}
+
+.game {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.game .block {
+  padding: 9%;
+  margin: 1%;
+  float: left;
+}
