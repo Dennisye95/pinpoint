@@ -3,24 +3,23 @@ body {
 }
 
 .header {
+  margin: auto;
   text-align: center;
   color: white;
+  max-width: 600px;
 }
 
 .header #title {
-  font-size: 75px;
+  font-size: 80px;
   font-weight: 800;
 }
 
 .game {
-  width: 100%;
-  height: 100%;
   max-width: 600px;
   margin: 0 auto;
 }
 
 .game .block {
-  margin: 1%;
   float: left;
   position: relative;
 }
@@ -31,4 +30,22 @@ body {
   width: 100%;
   height: 100%;
   text-align: center;
+}
+
+.stats,
+.settings {
+  margin: auto;
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+}
+
+.settings .form-control{
+  margin: 0px 50px 0px 50px;
+}
+
+.stats span,
+.stats label {
+  margin: 0px 25px 0px 25px;
+  font-weight: 800px;
 }

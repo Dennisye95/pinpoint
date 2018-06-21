@@ -1,40 +1,52 @@
 var state = {}
 
 $(document).ready(() => {
-  state.size = 10;
-  state.level = 10;
-  state.colors = randomColors();
-  cssClasses();
-  state.current = {
-    x: Math.floor(state.size/2) + 1,
-    y: Math.floor(state.size/2) + 1
-  }
-  state.orientation = true;
-  state.direction = 1;
-  state.score = 0;
-  startGame();
+  resetGame();
+  $('.settings').submit(() => {
+    resetGame();
+    startGame();
+  });
 });
 
 // Core functions
 function startGame() {
-  createGrid();
-  var interval = (1/state.level) * state.size * 100;
-  setInterval(move, interval);
-  $('.game').click(hit);
-  $('body').keyup((e) => {
-      if (e.keyCode == 32) {
-        hit();
-      }
-  });
+  resetGame();
+  state.interval = 6000 / (state.level * state.size);
+  state.gameInterval = setInterval(move, state.interval);
+  state.scoreInterval = setInterval(updateStats, 1000);
+  trigger(hit);
 }
 
 function createGrid() {
   for (var i=0; i<state.size*state.size; i++) {
     $('.game').append('<div class="block"></div>');
   }
-  $('.game .block').addClass('block-color');
+  $('.game .block').addClass('block-style');
   addDot();
   highlight();
+}
+
+function resetGame() {
+  clearInterval(state.gameInterval);
+  clearInterval(state.scoreInterval);
+  state.gameInterval = null;
+  state.scoreInterval = null;
+  state.size = Number($('#size').val());
+  state.level = Number($('#level').val());
+  state.colors = randomColors();
+  cssClasses();
+  state.current = {
+    x: Math.floor(Math.random() * state.size) + 1,
+    y: Math.floor(Math.random() * state.size) + 1,
+  }
+  state.orientation = Math.floor(Math.random() * 2);
+  state.direction = 1;
+  state.score = 0;
+  state.moves = 0;
+  state.time = 0;
+  removeTriggers();
+  $('.game .block').remove();
+  createGrid();
 }
 
 function addDot() {
@@ -49,15 +61,17 @@ function addDot() {
 }
 
 function hit() {
+  state.moves += 1;
   if (state.current.x === state.target.x && state.current.y === state.target.y) {
-    console.log('success');
     state.score += 1;
     addDot();
   }
   state.orientation = !state.orientation;
+  updateStats(updateTime=false);
 }
 
 function move() {
+  state.time += state.interval;
   if (state.orientation) {
     if (state.current.x >= state.size) {
       state.direction = -1;
@@ -77,7 +91,6 @@ function move() {
 }
 
 function highlight() {
-  console.log(state.current);
   $('.game .block').removeClass('highlight');
   for (var i = 1; i<=state.size; i++) {
     if (state.orientation) {
@@ -102,6 +115,20 @@ function highlight() {
 }
 
 // Helpers
+function trigger(callback) {
+  $('.game').click(callback);
+  $('body').keyup((e) => {
+      if (e.keyCode == 32) {
+        callback();
+      }
+  });
+}
+
+function removeTriggers() {
+  $('.game').off();
+  $('body').off();
+}
+
 function getIndex(x=state.current.x, y=state.current.y) {
   return (y-1) * state.size + x;
 }
@@ -125,14 +152,25 @@ function colorString(colors) {
 }
 
 // Utils
+function updateStats(updateTime=true) {
+  $('.stats > #score').text(state.score);
+  $('.stats > #moves').text(state.moves);
+  if (updateTime) {
+    $('.stats > #time').text(String(state.time/1000).split('.')[0] + ' s');
+  }
+}
+
 function cssClasses() {
-  var width = 100/state.size - 2;
+  var margin = 1 - (Math.floor((state.size - 1) / 5) - 1) * 0.25;
+  var marginString = margin + '%';
+  var width = 100/state.size - 2*margin;
   var widthString = String(width).substr(0,5) + '%';
   var fontSize = String(width*35)+'%';
 
   var blockStyle = document.createElement('style');
   blockStyle.type = 'text/css';
-  blockStyle.innerHTML = `.block-color {
+  blockStyle.innerHTML = `.block-style {
+    margin: ${marginString};
     background-color: ${state.colors[0]};
     width: ${widthString};
     padding-bottom: ${widthString};

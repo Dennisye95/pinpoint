@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Grid Game</title>
+  <title>PinPoint</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
   <link rel="stylesheet" href="gridGame.css">
@@ -11,7 +11,26 @@
 </head>
 <body>
   <div class="header">
-    <span id="title">2D Grid Game</span>
+    <span id="title">Pin Point</span>
+    <form action="#" class="form-inline settings">
+      <div class="form-group">
+        <label for="size">Size</label>
+        <input type="number" class="form-control" value="5" id="size" min="1" max="25">
+      </div>
+      <div class="form-group">
+        <label for="level">Difficulty</label>
+        <input type="number" class="form-control" value="5" id="level" min="1" max="100">
+      </div>
+      <button type="submit" class="btn btn-default">Play Game</button>
+    </form>
+    <div class="stats">
+      <Label>Score:</Label>
+      <span id="score">0</span>
+      <Label>Moves:</Label>
+      <span id="moves">0</span>
+      <Label>Time:</Label>
+      <span id="time">0</span>
+    </div>
   </div>
   <div class="game"></div>
 </body>
