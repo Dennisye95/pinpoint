@@ -1,17 +1,28 @@
 var state = {}
 
 $(document).ready(() => {
+  initializeSettings();
   resetGame();
+  $('.slider').change(inputChange);
   $('.settings').submit(() => {
     resetGame();
-    startGame();
+    showBoard();
   });
+  $('.start').click(() => {
+    $('.start').hide();
+    startGame();
+  })
 });
 
 // Core functions
-function startGame() {
+function showBoard() {
   resetGame();
-  state.interval = 6000 / (state.level * state.size);
+  $('.settings').hide();
+  $('.game').show();
+  state.interval = 10000 / (state.level * state.size);
+}
+
+function startGame() {
   state.gameInterval = setInterval(move, state.interval);
   state.scoreInterval = setInterval(updateStats, 1000);
   trigger(hit);
@@ -19,9 +30,9 @@ function startGame() {
 
 function createGrid() {
   for (var i=0; i<state.size*state.size; i++) {
-    $('.game').append('<div class="block"></div>');
+    $('.board').append('<div class="block"></div>');
   }
-  $('.game .block').addClass('block-style');
+  $('.board .block').addClass('block-style');
   addDot();
   highlight();
 }
@@ -45,7 +56,7 @@ function resetGame() {
   state.moves = 0;
   state.time = 0;
   removeTriggers();
-  $('.game .block').remove();
+  $('.board .block').remove();
   createGrid();
 }
 
@@ -55,9 +66,9 @@ function addDot() {
     y: Math.floor(Math.random() * state.size) + 1
   };
   var index = getIndex(state.target.x, state.target.y);
-  $('.game .block').empty();
-  $(`.game .block:nth-child(${index})`).html('<i class="icon target fas fa-dot-circle"></i>');
-  $('.game .block .icon').addClass('icon-style');
+  $('.board .block').empty();
+  $(`.board .block:nth-child(${index})`).html('<i class="icon target fas fa-dot-circle"></i>');
+  $('.board .block .icon').addClass('icon-style');
 }
 
 function hit() {
@@ -91,17 +102,22 @@ function move() {
 }
 
 function highlight() {
-  $('.game .block').removeClass('highlight');
+  $('.board .block').removeClass('dim');
+  $('.board .block').removeClass('highlight');
   for (var i = 1; i<=state.size; i++) {
     if (state.orientation) {
       var index = getIndex(i, state.current.y);
-      if (index != getIndex() && index != getIndex(state.target.x, state.target.y)) {
-        $(`.game .block:nth-child(${index})`).addClass('highlight')
+      if (index == getIndex() && index != getIndex(state.target.x, state.target.y)) {
+        $(`.board .block:nth-child(${index})`).addClass('highlight');
+      } else {
+        $(`.board .block:nth-child(${index})`).addClass('dim');
       }
     } else {
       var index = getIndex(state.current.x, i);
-      if (index != getIndex() && index != getIndex(state.target.x, state.target.y)) {
-        $(`.game .block:nth-child(${index})`).addClass('highlight')
+      if (index == getIndex() && index != getIndex(state.target.x, state.target.y)) {
+        $(`.board .block:nth-child(${index})`).addClass('highlight');
+      } else {
+        $(`.board .block:nth-child(${index})`).addClass('dim');
       }
     }
   }
@@ -115,8 +131,24 @@ function highlight() {
 }
 
 // Helpers
+function initializeSettings() {
+  var size = localStorage.getItem('size') || 5;
+  var level = localStorage.getItem('level') || 5;
+  $('#size').val(size);
+  $('#level').val(level);
+  $('label[for=size]').text('SIZE: ' + size);
+  $('label[for=level]').text('LEVEL: ' + level);
+}
+
+function inputChange(event) {
+  var value = event.target.value;
+  var id = event.target.id;
+  localStorage.setItem(id, value);
+  $(`label[for=${id}]`).text(`${id.toUpperCase()}: ${value}`);
+}
+
 function trigger(callback) {
-  $('.game').click(callback);
+  $('.board').click(callback);
   $('body').keyup((e) => {
       if (e.keyCode == 32) {
         callback();
@@ -125,7 +157,7 @@ function trigger(callback) {
 }
 
 function removeTriggers() {
-  $('.game').off();
+  $('.board').off();
   $('body').off();
 }
 
@@ -138,13 +170,17 @@ function randomColors() {
   for (var i=0; i<3; i++) {
     colors.push(Math.floor(Math.random() * 256));
   };
+  var dim = colors.map((color) => {
+    return color * 0.5;
+  })
   var secondary = colors.map((color) => {
     return 255 - color;
   });
 
   var primaryColor = colorString(colors);
+  var dimColor = colorString(dim);
   var secondaryColor = colorString(secondary);
-  return [primaryColor, secondaryColor];
+  return [primaryColor, dimColor, secondaryColor];
 }
 
 function colorString(colors) {
@@ -165,7 +201,7 @@ function cssClasses() {
   var marginString = margin + '%';
   var width = 100/state.size - 2*margin;
   var widthString = String(width).substr(0,5) + '%';
-  var fontSize = String(width*35)+'%';
+  var fontSize = String(width/3.2)+'em';
 
   var blockStyle = document.createElement('style');
   blockStyle.type = 'text/css';
@@ -177,17 +213,24 @@ function cssClasses() {
   }`;
   document.getElementsByTagName('head')[0].appendChild(blockStyle);
 
+  var dimStyle = document.createElement('style');
+  dimStyle.type = 'text/css';
+  dimStyle.innerHTML = `.dim {
+    background-color: ${state.colors[1]};
+  }`;
+  document.getElementsByTagName('head')[0].appendChild(dimStyle);
+
   var highlightStyle = document.createElement('style');
   highlightStyle.type = 'text/css';
   highlightStyle.innerHTML = `.highlight {
-    background-color: ${state.colors[1]};
+    background-color: ${state.colors[2]};
   }`;
   document.getElementsByTagName('head')[0].appendChild(highlightStyle);
 
   var iconStyle = document.createElement('style');
   iconStyle.type = 'text/css';
   iconStyle.innerHTML = `.icon-style {
-    color: ${state.colors[1]};
+    color: ${state.colors[2]};
     font-size: ${fontSize};
   }`
   document.getElementsByTagName('head')[0].appendChild(iconStyle);
